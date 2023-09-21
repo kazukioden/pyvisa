@@ -35,16 +35,66 @@ target_temp2 = 310
 # 測定開始
 t0 = time.time()
 temp = lake.getTemp()
-
 while True:
     try:
-        # Ctrl+Aが押された場合の温度上昇
-        if keyboard.is_pressed('ctrl+a'):
-            lake.setTemp(1, target_temp1, 30)
-        
-        # Ctrl+Bが押された場合の温度降下
-        if keyboard.is_pressed('ctrl+b'):
-            lake.setTemp(1, target_temp2, 30)
+        systime = time.time()
+        reltime = time.time() - t0
+
+        vn += increment * direction
+        if vn >= vmax:
+            direction = -1
+            n_swings += 1
+        elif vn <= 0:
+            direction = 1
+            n_swings += 1
+
+        elec.set_voltage(voltage=vn)
+        curr = elec.get_current()
+        temp = lake.getTemp()
+        data = [temp, curr, systime, reltime, vn]
+        smz.writedata(filename, data)
+
+        if temp > 450 or n_swings >= 2 * max_swings:
+            elec.operate(state=0)
+            break
+
+    except KeyboardInterrupt:
+        print("Ctrl+C detected")
+        #elec.operate(state=0)
+        break
+while True:
+    try:
+        lake.setTemp(1, target_temp1, 30)
+
+        systime = time.time()
+        reltime = time.time() - t0
+
+        vn += increment * direction
+        if vn >= vmax:
+            direction = -1
+            n_swings += 1
+        elif vn <= 0:
+            direction = 1
+            n_swings += 1
+
+        elec.set_voltage(voltage=vn)
+        curr = elec.get_current()
+        temp = lake.getTemp()
+        data = [temp, curr, systime, reltime, vn]
+        smz.writedata(filename, data)
+
+        if temp > 450 or n_swings >= 2 * max_swings:
+            elec.operate(state=0)
+            break
+
+    except KeyboardInterrupt:
+        print("Ctrl+C detected")
+        #elec.operate(state=0)
+        break
+ 
+while True:
+    try:
+        lake.setTemp(1, target_temp2, 30)
 
         systime = time.time()
         reltime = time.time() - t0
